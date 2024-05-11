@@ -4,7 +4,7 @@
  * @created     : Tuesday Apr 16, 2024 19:47:18 CST
  */
 
-package com.craftinginterpreters.lox.Lox;
+package com.craftinginterpreters.lox;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,8 +13,8 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import static com.craftinginterpreters.lox.Scanner;
-import static com.craftinginterpreters.lox.Token;
+import static com.craftinginterpreters.lox.Scanner.*;
+import static com.craftinginterpreters.lox.Token.*;
 
 public class Lox {
 	static boolean hasError = false;
@@ -68,7 +68,7 @@ public class Lox {
 	private static void report(int line, String where, String message) {
 		System.err.println(
 				"[line " + line + "] Error" + where + ": " + message);
-		hadError = true;
+		hasError = true;
 	}
 }
 

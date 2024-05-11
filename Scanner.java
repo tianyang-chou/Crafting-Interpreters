@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.craftinginterpreters.lox.TokenType.*;
-import static com.craftinginterpreters.lox.Token;
+import static com.craftinginterpreters.lox.Token.*;
 
 public class Scanner
 {
@@ -102,7 +102,13 @@ public class Scanner
 			case '-': addToken(MINUS); break;
 			case '+': addToken(PLUS); break;
 			case ';': addToken(SEMICOLON); break;
-			case '*': addToken(STAR); break;
+			case '*': 
+								if (match('/')){
+									advance();
+								} else {
+									addToken(STAR); 
+								}
+								break;
 			case '!':
 								addToken(match('=') ? BANG_EQUAL : BANG);
 								break;
@@ -119,6 +125,10 @@ public class Scanner
 								if (match('/')) {
 									// A comment goes until the end of the line
 									while (peek() != '\n' && !isAtEnd()) advance();
+								}else if (match('*')) {
+									while (!isAtEnd()){
+										advance();
+									}
 								}else{
 									addToken(SLASH);
 								}

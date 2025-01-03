@@ -1,3 +1,19 @@
+/*
+ * Productions of expression: 
+ * ------------------------------------------------------------
+ * expression     → conditional;
+ * conditional    → comma ( "?" expression ":" conditional )? ;
+ * comma          → equality ( "," equality)* ;
+ * equality       → comparison ( ( "!=" | "==" ) comparison )* ;
+ * comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+ * term           → factor ( ( "-" | "+" ) factor )* ;
+ * factor         → unary ( ( "/" | "*" ) unary )* ;
+ * unary          → ( "!" | "-" ) unary
+  	              | primary ;
+ * primary        → NUMBER | STRING | "true" | "false" | "nil"
+                  | "(" expression ")" | expression "?" expression ":" expression ;
+ * ------------------------------------------------------------
+*/
 package com.craftinginterpreters.lox;
 
 import java.util.List;
@@ -23,7 +39,32 @@ class Parser {
 	}
 
 	private Expr expression() {
-		return equality();
+		return conditional();
+	}
+
+	private Expr conditional() {
+		Expr expr = comma();
+	    
+		while(match(QUESTION)) {
+			Expr thenBranch = expression();
+			consume(COLON, "Expect ':' after then branch of conditional expression.");
+			Expr elseBranch = conditional();
+			expr = new Expr.Conditional(expr, thenBranch, elseBranch);	
+		}
+
+		return expr;
+	}
+
+	private Expr comma() {
+		Expr expr = equality();
+	    
+		while(match(COMMA)) {
+			Token operator = previous();
+			Expr right = equality();
+			expr = new Expr.Binary(expr, operator, right);	
+		}
+
+		return expr;
 	}
 
 	private Expr equality(){
@@ -98,6 +139,9 @@ class Parser {
 			consume(RIGHT_PAREN, "Expect ')' after expression.");
 			return new Expr.Grouping(expr);
 		}
+
+		Expr left = expression();
+		
 
 		throw error(peek(), "Expect expression.");
 	}

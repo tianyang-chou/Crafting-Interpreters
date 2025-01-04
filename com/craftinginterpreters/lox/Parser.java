@@ -11,14 +11,20 @@
  * unary          → ( "!" | "-" ) unary
   	              | primary ;
  * primary        → NUMBER | STRING | "true" | "false" | "nil"
-                  | "(" expression ")" | expression "?" expression ":" expression ;
+                  | "(" expression ")" | expression "?" expression ":" expression 
+				  | IDENTIFIER ;;
  * ------------------------------------------------------------
  * Productions of statement:
  * ------------------------------------------------------------
- * program       → statement* EOF ;
+ * program       → declaration* EOF ; 
+ * declaration   → varDecl | statement ; // A declaration includes declaring or non-declaring statement
+ * varDecl       → "var" IDENTIFIER ( "=" expression )? ";" ;
  * statment      → exprStmt | printStmt ;
  * exprStmt      → expression ";" ;
  * printStmt     → "print" expression ";" ;
+ * ------------------------------------------------------------
+ * Productions of variable declaration:
+ * ------------------------------------------------------------
  * ------------------------------------------------------------
 */
 package com.craftinginterpreters.lox;
@@ -41,10 +47,33 @@ class Parser {
 	List<Stmt> parse() {
 		List<Stmt> statements = new ArrayList<>();
 		while (!isAtEnd()) {
-			statements.add(statement());
+			statements.add(declaration());
 		}
 
 		return statements;
+	}
+
+	private Stmt declaration() {
+		try {
+			if (match(VAR)) return varDeclaration();
+
+			return statement();
+		} catch (ParseError error) {
+			synchronize();
+			return null;
+		}
+	}
+
+	private Stmt varDeclaration() {
+		Token name = consume(IDENTIFIER, "Expect a variable name.");
+
+		Expr initializer = null;
+		if (match(EQUAL)) {
+			initializer = expression();
+		}
+
+		consume(SEMICOLON, "Expect ';' after variable declaration.");
+		return new Stmt.Var(name, initializer);
 	}
 
 	private Stmt statement() {
@@ -166,8 +195,11 @@ class Parser {
 			return new Expr.Grouping(expr);
 		}
 
+		if(match(IDENTIFIER)) {
+			return new Expr.Variable(previous());
+		}
+
 		Expr left = expression();
-		
 
 		throw error(peek(), "Expect expression.");
 	}

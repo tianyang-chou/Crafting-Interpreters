@@ -1,7 +1,8 @@
 /*
  * Productions of expression: 
  * ------------------------------------------------------------
- * expression     → conditional;
+ * expression     → assignment ;
+ * assignment     → IDENTIFIER "=" assignment | conditional;
  * conditional    → comma ( "?" expression ":" conditional )? ;
  * comma          → equality ( "," equality)* ;
  * equality       → comparison ( ( "!=" | "==" ) comparison )* ;
@@ -19,7 +20,8 @@
  * program       → declaration* EOF ; 
  * declaration   → varDecl | statement ; // A declaration includes declaring or non-declaring statement
  * varDecl       → "var" IDENTIFIER ( "=" expression )? ";" ;
- * statment      → exprStmt | printStmt ;
+ * statement     → exprStmt | printStmt | block ;
+ * block         → "{" declaration* "}" ;
  * exprStmt      → expression ";" ;
  * printStmt     → "print" expression ";" ;
  * ------------------------------------------------------------
@@ -78,8 +80,20 @@ class Parser {
 
 	private Stmt statement() {
 		if (match(PRINT)) return printStatement();
+		if (match(LEFT_BRACE)) return new Stmt.Block(block());
 		return expressionStatement();
 	}		
+	
+	private List<Stmt> block() {
+		List<Stmt> statements = new ArrayList<>();
+
+		while (!check(RIGHT_BRACE) && !isAtEnd()) {
+			statements.add(declaration());
+		}
+
+		consume(RIGHT_BRACE, "Expect '}' after block.");
+		return statements;
+	}
 
 	private Stmt printStatement() {
 		Expr value = expression();
@@ -94,7 +108,25 @@ class Parser {
 	}
 
 	private Expr expression() {
-		return conditional();
+		return assignment();
+	}
+
+	private Expr assignment() {
+		Expr expr = conditional(); 
+
+		if(match(EQUAL)) {
+			Token equals = previous();
+			Expr value = assignment();
+
+			if (expr instanceof Expr.Variable) {
+				Token name = ((Expr.Variable)expr).name;
+				return new Expr.Assign(name, value);
+			}
+
+			error(equals, "Invalid assignment target.");
+		}
+
+		return expr;
 	}
 
 	private Expr conditional() {

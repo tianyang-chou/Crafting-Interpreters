@@ -7,7 +7,7 @@ class Interpreter implements Expr.Visitor<Object>,
 	void interpret(List<Stmt> statements) {
 		try {
 			for (Stmt stmt : statements) {
-				execute(stmt);
+			    execute(stmt);
 			}
 		} catch (RuntimeError error) {
 			Lox.runtimeError(error);
@@ -62,12 +62,15 @@ class Interpreter implements Expr.Visitor<Object>,
 			value = evaluate(stmt.initializer);
 		}
 
-		environment.define(stmt.name.lexeme, value);
+		if (value != null){
+			environment.define(stmt.name.lexeme, value);
+		}
 		return null;
 	}
 
 	@Override
 	public Object visitAssignExpr(Expr.Assign expr) {
+		environment.get(expr.name);
 		Object value = evaluate(expr.expression);
 		environment.assign(expr.name, value);
 		return value;
@@ -75,7 +78,8 @@ class Interpreter implements Expr.Visitor<Object>,
 
 	@Override
 	public Void visitExpressionStmt(Stmt.Expression stmt) {
-		evaluate(stmt.expression);
+		Object value = evaluate(stmt.expression);
+		System.out.println(stringify(value));
 		return null;
 	}
 

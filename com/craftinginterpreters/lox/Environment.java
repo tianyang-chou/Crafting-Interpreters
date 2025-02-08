@@ -16,9 +16,11 @@ class Environment {
 	}
 
 	Object get(Token name) {
+		// try to get variable value from current(local) environment
 		if (values.containsKey(name.lexeme)) {
 			return values.get(name.lexeme);
 		}
+		// try to get variable value from enclosing environment
 		if (enclosing != null) return enclosing.get(name);
 
 		throw new RuntimeError(name,

@@ -212,10 +212,12 @@ class Parser {
 	}
 
 	private Expr expression() {
+		System.out.println("-- expression() --");
 		return assignment();
 	}
 
 	private Expr assignment() {
+		System.out.println("-- assignment() --");
 		Expr expr = conditional(); 
 
 		if(match(EQUAL)) {
@@ -234,7 +236,8 @@ class Parser {
 	}
 
 	private Expr conditional() {
-		Expr expr = comma();
+		System.out.println("-- conditional() --");
+		Expr expr = or();
 	    
 		while(match(QUESTION)) {
 			Expr thenBranch = expression();
@@ -246,19 +249,21 @@ class Parser {
 		return expr;
 	}
 
-	private Expr comma() {
-		Expr expr = or();
-	    
-		while(match(COMMA)) {
-			Token operator = previous();
-			Expr right = equality();
-			expr = new Expr.Binary(expr, operator, right);	
-		}
+	// private Expr comma() {
+	// 	System.out.println("-- comma() --");
+	// 	Expr expr = or();
+	//     
+	// 	while(match(COMMA)) {
+	// 		Token operator = previous();
+	// 		Expr right = equality();
+	// 		expr = new Expr.Binary(expr, operator, right);	
+	// 	}
 
-		return expr;
-	}
+	// 	return expr;
+	// }
 
 	private Expr or() {
+		System.out.println("-- or() --");
 		Expr expr = and();
 
 		while(match(OR)) {
@@ -271,6 +276,7 @@ class Parser {
 	}
 
 	private Expr and() {
+		System.out.println("-- and() --");
 		Expr expr = equality();
 
 		while(match(AND)) {
@@ -283,6 +289,7 @@ class Parser {
 	}
 
 	private Expr equality(){
+		System.out.println("-- equality() --");
 		Expr expr = comparison();
 
 		while(match(BANG_EQUAL, EQUAL_EQUAL)) {
@@ -295,6 +302,7 @@ class Parser {
 	}
 
 	private Expr comparison() {
+		System.out.println("-- comparison() --");
 		Expr expr = term();
 
 		while(match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
@@ -307,6 +315,7 @@ class Parser {
 	}
 
 	private Expr term() {
+		System.out.println("-- term() --");
 		Expr expr = factor();
 
 		while(match(PLUS, MINUS)) {
@@ -319,6 +328,7 @@ class Parser {
 	}
 
 	private Expr factor() {
+		System.out.println("-- factor() --");
 		Expr expr = unary();
 
 		while(match(SLASH, STAR)) {
@@ -331,6 +341,7 @@ class Parser {
 	}
 
 	private Expr unary() {
+		System.out.println("-- unary() --");
 		if(match(BANG, MINUS)){
 			Token operator = previous();
 			Expr right = unary();
@@ -341,6 +352,7 @@ class Parser {
 	}
 
 	private Expr call() {
+		System.out.println("-- call() --");
 		Expr expr = primary();
 
 		while (true) {
@@ -354,12 +366,14 @@ class Parser {
 	}
 
 	private Expr finishCall(Expr callee) {
+		System.out.println("-- finishCall() --");
 		List<Expr> arguments = new ArrayList<>();
 		if (!check(RIGHT_PAREN)) {
 			do {
 				if (arguments.size() >= 255) {
 					error(peek(), "Can't have more than 255 arguments.");
 				}
+				System.out.println("\n -- Add argument -- \n");
 				arguments.add(expression());
 			} while (match(COMMA));
 		}
@@ -375,6 +389,8 @@ class Parser {
 		if(match(NIL)) return new Expr.Literal(null);
 
 		if(match(NUMBER, STRING)) {
+			System.out.println("-- number or string --");
+			System.out.println(previous().literal);
 			return new Expr.Literal(previous().literal);
 		}
 

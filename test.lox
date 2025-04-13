@@ -27,8 +27,8 @@ while (a < 10) {
 
 var a = 0;
 
-fun sayHi(first, last) {
-	print "Hi, " + first + " " + last + "!";
+fun sayHi(first, second) {
+	print "Hi, " + first + " " + second + "!";
 }
 
 sayHi(1, 2);

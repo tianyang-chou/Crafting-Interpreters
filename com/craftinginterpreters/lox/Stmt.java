@@ -2,17 +2,20 @@ package com.craftinginterpreters.lox;
 
 import java.util.List;
 
-abstract class Stmt {
-  interface Visitor<R> {
+abstract class Stmt { // abstract item
+  abstract <R> R accept(Visitor<R> visitor);
+
+  interface Visitor<R> { // abstract visitor
     R visitExpressionStmt(Expression stmt);
     R visitFunctionStmt(Function stmt);
     R visitIfStmt(If stmt);
     R visitBlockStmt(Block stmt);
     R visitPrintStmt(Print stmt);
+    R visitReturnStmt(Return stmt);
     R visitVarStmt(Var stmt);
     R visitWhileStmt(While stmt);
   }
-  static class Expression extends Stmt {
+  static class Expression extends Stmt { // concrete item1
     Expression(Expr expression) {
       this.expression = expression;
     }
@@ -24,7 +27,7 @@ abstract class Stmt {
 
     final Expr expression;
   }
-  static class Function extends Stmt {
+  static class Function extends Stmt { // concrete item2
     Function(Token name, List<Token> params, List<Stmt> body) {
       this.name = name;
       this.params = params;
@@ -80,6 +83,20 @@ abstract class Stmt {
 
     final Expr expression;
   }
+  static class Return extends Stmt {
+    Return(Token keyword, Expr value) {
+      this.keyword = keyword;
+      this.value = value;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitReturnStmt(this);
+    }
+
+    final Token keyword;
+    final Expr value;
+  }
   static class Var extends Stmt {
     Var(Token name, Expr initializer) {
       this.name = name;
@@ -108,6 +125,4 @@ abstract class Stmt {
     final Expr condition;
     final Stmt body;
   }
-
-  abstract <R> R accept(Visitor<R> visitor);
 }
